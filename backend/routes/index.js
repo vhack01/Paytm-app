@@ -1,8 +1,10 @@
-const { Router } = require("express");
-const router = Router();
+const express = require("express");
+const userRouter = require("./user");
+const accountRouter = require("./account");
 
-router.post("/signup", (req, res) => {});
-router.post("/signin", (req, res) => {});
-router.put("/", (req, res) => {});
+const router = express.Router();
+
+router.use("/user", userRouter);
+router.use("/account", accountRouter);
 
 module.exports = router;
