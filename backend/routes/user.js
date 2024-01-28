@@ -5,6 +5,7 @@ const { validateSignin } = require("../middleware/user/validateSignin");
 const jwt = require("jsonwebtoken");
 const { USER } = require("../db/db");
 const { JWT_SECRET } = require("../config");
+const { authMiddleware } = require("../middleware/middleware");
 const router = express.Router();
 
 router.post("/signup", userExist, validateUser, async (req, res) => {
@@ -45,6 +46,62 @@ router.post("/signin", validateSignin, (req, res) => {
 
   res.status(200).json({
     token,
+  });
+});
+
+router.put("/", authMiddleware, userExist, async (req, res) => {
+  const username = req.headers.userId;
+  const data = req.body;
+
+  const existingData = await USER.findOne({ username: username });
+  if (!existingData) {
+    return res.status(411).json({});
+  }
+
+  if (data.password.length < 4) {
+    return res
+      .status(411)
+      .json({ message: "Error while updating information" });
+  }
+
+  const isUpdated = await USER.updateOne(
+    { username },
+    {
+      ...existingData,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      password: data.password,
+    }
+  );
+  console.log("isupdated: ", isUpdated);
+  if (!isUpdated) {
+    return res.status(411).json({
+      message: "Failed to update information",
+    });
+  }
+
+  res.status(200).json({
+    message: "Updated successfully",
+  });
+});
+
+router.get("/bulk", authMiddleware, async (req, res) => {
+  const filter = req.params.filter;
+
+  const users = await USER.find({});
+
+  if (!users) {
+    return res.status(404).json({
+      message: "No user found",
+    });
+  }
+
+  const filteredUsers = users.filter(
+    (user) => user.firstName.includes(filter) || user.lastName.includes(filter)
+  );
+
+  res.status(200).json({
+    users: filteredUsers,
   });
 });
 

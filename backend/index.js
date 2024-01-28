@@ -5,11 +5,7 @@ const mainRouter = require("./routes/index");
 const bodyParser = require("body-parser");
 const app = express();
 
-app.use(
-  cors({
-    origin: "http://localhost:5",
-  })
-);
+app.use(cors());
 
 app.use(bodyParser.json());
 app.use("/api/v1", mainRouter);
